@@ -1,0 +1,66 @@
+# Defaults shared by every environment.
+# Per-environment overrides live in values-dev.yaml / values-qa.yaml / values-prod.yaml.
+# The image tag is always supplied by the pipeline with --set image.tag=<immutable tag>.
+
+nameOverride: ""
+fullnameOverride: "hello-world"
+
+replicaCount: 1
+
+image:
+  registry: gtlc-production.common.repositories.cloud.sap
+  # Per-env repository, mirroring FIPC's fipc-dev / fipc-qa / fipc-prod split.
+  repository: btp-gcp-test
+  tag: ""          # set by the pipeline; never commit a tag here
+  pullPolicy: IfNotPresent
+
+imagePullSecrets:
+  - name: hello-world-registry
+
+serviceAccount:
+  create: false
+  name: default
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: http
+
+containerPort: 3000
+
+istio:
+  sidecarInject: true
+
+apirule:
+  enabled: true
+  gatewayNamespace: kyma-system
+  gateway: kyma-gateway
+  host: ""         # must be set per environment
+  path: /*
+  methods:
+    - GET
+  noAuth: true
+
+probes:
+  path: /healthz
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    cpu: 100m
+    memory: 64Mi
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: ["ALL"]
+  readOnlyRootFilesystem: true

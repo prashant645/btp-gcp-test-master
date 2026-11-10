@@ -1,0 +1,53 @@
+# PRs and topic branches: build and test only, never deploy.
+# Equivalent to FIPC's `case ~/(^PR-.*)/: DEPLOY_ENV = 'none'`.
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, master, 'rel.*']
+  push:
+    branches:
+      - 'feature/**'
+      - 'bugfix/**'
+      - 'hotfix/**'
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test, lint chart, build image (no push)
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Shell script syntax
+        run: bash -n scripts/*.sh
+
+      - name: Helm lint (all environments)
+        run: |
+          set -euo pipefail
+          if ! command -v helm >/dev/null 2>&1; then
+            mkdir -p "$HOME/bin" && export PATH="$HOME/bin:$PATH"
+            curl -fsSL https://get.helm.sh/helm-v3.15.4-linux-amd64.tar.gz | tar -xz -C /tmp linux-amd64/helm
+            mv /tmp/linux-amd64/helm "$HOME/bin/helm"
+          fi
+          for e in dev qa prod; do
+            echo "--- $e ---"
+            # A placeholder host still lints; only deploys are blocked on it.
+            helm lint helm/demoapp -f "helm/demoapp/values-${e}.yaml" --set image.tag=ci
+            helm template hello-world helm/demoapp -n "$e" \
+              -f "helm/demoapp/values-${e}.yaml" --set image.tag=ci > /dev/null
+          done
+
+      - name: Build image (not pushed)
+        run: docker build -t demoappdeploytokyma:ci-${{ github.run_number }} .

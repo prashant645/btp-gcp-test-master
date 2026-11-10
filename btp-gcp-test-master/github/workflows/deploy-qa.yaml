@@ -1,0 +1,28 @@
+name: Deploy – qa
+
+on:
+  push:
+    branches:
+      - master
+      - 'rel.[0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9]'
+      - 'rel.[0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9]-hotfix.[0-9]*'
+  workflow_dispatch:
+
+# Never cancel a running deploy: stopping e2e or rollback halfway could leave a broken version live.
+concurrency:
+  group: btp-gcp-test-qa
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  qa:
+    uses: ./.github/workflows/wf-deploy-e2e.yaml
+    with:
+      deploy_env: qa
+      namespace: demoapp-qa
+    secrets:
+      GCP_KUBECONFIG_B64: ${{ secrets.GCP_KUBECONFIG_B64 }}
+      REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+      REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}

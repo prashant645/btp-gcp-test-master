@@ -1,0 +1,7 @@
+# DEV - deployed automatically from the `develop` branch.
+# Targets the GCP Kyma cluster (shoot a35836f, stage).
+replicaCount: 1
+image:
+  repository: btp-gcp-test-dev
+apirule:
+  host: demoapp-dev.a35836f.stage.kyma.ondemand.com

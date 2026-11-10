@@ -1,0 +1,7 @@
+# QA - deployed automatically from `master` and from `rel.YYYY.MM.DD[-hotfix.N]`.
+# Targets the GCP Kyma cluster (shoot a35836f, stage).
+replicaCount: 1
+image:
+  repository: btp-gcp-test-qa
+apirule:
+  host: demoapp-qa.a35836f.stage.kyma.ondemand.com

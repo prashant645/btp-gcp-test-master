@@ -1,0 +1,15 @@
+# PROD - deployed from `vYYYY.MM.DD[-hotfix.N]` behind the `production`
+# GitHub environment approval gate.
+# Targets the GCP Kyma cluster (shoot a35836f, stage).
+replicaCount: 2
+image:
+  repository: btp-gcp-test-prod
+apirule:
+  host: demoapp.a35836f.stage.kyma.ondemand.com
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi

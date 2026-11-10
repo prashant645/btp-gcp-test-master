@@ -1,0 +1,16 @@
+apiVersion: gateway.kyma-project.io/v2
+kind: APIRule
+metadata:
+  name: hello-world
+  namespace: demoapp
+spec:
+  gateway: kyma-system/kyma-gateway
+  hosts:
+    - demoapp.c-1282d6a.stage.kyma.ondemand.com
+  service:
+    name: hello-world
+    port: 80
+  rules:
+    - path: /*
+      methods: [GET]
+      noAuth: true
